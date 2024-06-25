@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Babyfoot Score</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+        }
+        .container {
+            text-align: center;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 90vw;
+        }
+        h2 {
+            margin: 10px 0;
+        }
+        input {
+            margin: 10px 5px;
+            padding: 10px;
+            width: calc(100% - 22px);
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #scoreboard {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div>
+            <input type="text" id="room" placeholder="Room Name">
+            <input type="text" id="player" placeholder="Player Name">
+            <button onclick="joinRoom()">Join Room</button>
+        </div>
+        <div>
+            <h2 id="status">Waiting to join a room...</h2>
+            <h2 id="scoreboard"></h2>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        function joinRoom() {
+            const room = document.getElementById('room').value;
+            const player = document.getElementById('player').value;
+            socket.emit('joinRoom', { room, player });
+        }
+
+        socket.on('roomUpdate', (data) => {
+            if (data.players.length < 2) {
+                document.getElementById('status').innerText = "Waiting for opponent...";
+            }
+        });
+
+        socket.on('gameStart', (data) => {
+            document.getElementById('status').innerText = "Game started!";
+            document.getElementById('scoreboard').innerText = `${data.players[0]} - ${data.player1Score} : ${data.players[1]} - ${data.player2Score}`;
+        });
+
+        socket.on('scoreUpdate', (data) => {
+            document.getElementById('scoreboard').innerText = `${data.players[0]} - Score: ${data.player1Score} : ${data.players[1]} - Score: ${data.player2Score}`;
+        });
+    </script>
+</body>
+</html>
